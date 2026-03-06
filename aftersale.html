@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ClaimCheck · 售后话术</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <aside id="sidebar"></aside>
+  <div class="main">
+    <div class="main-hd" id="header"></div>
+    <div class="main-bd" id="content"></div>
+  </div>
+</div>
+<script src="app.js"></script>
+<script>
+document.body.insertAdjacentHTML('beforeend', sharedOverlay());
+renderSidebar('aftersale');
+
+let view = getState('aftersale_view_' + getProduct().id, 'input');
+let currentComp = getState('aftersale_comp_' + getProduct().id, 0);
+const p = getProduct();
+
+function renderInput() {
+  view = 'input';
+  setState('aftersale_view_' + p.id, 'input');
+  document.getElementById('header').innerHTML = `<div class="bc"><a href="index.html">概览</a><span class="sep">/</span><span class="cur">售后话术</span></div>`;
+
+  const savedText = getState('aftersale_text_' + p.id, '');
+  const ccs = (p.complaints || []).map((c, i) => `
+    <div class="cc" onclick="fillAndGenerate(${i})">
+      <div class="cc-tags">${c.tags.map(t => `<span class="tag tag-o">${t}</span>`).join('')}</div>
+      <div class="cc-q">"${c.q}"</div>
+    </div>`).join('') || '<div style="font-size:12px;color:var(--text-3);padding:8px 0">暂无常见客诉</div>';
+
+  document.getElementById('content').innerHTML = `
+    <div class="au">
+      <div style="display:grid;grid-template-columns:260px 1fr;gap:20px">
+        <div>
+          <div class="prod-img" style="aspect-ratio:1;margin-bottom:10px"><img src="${p.image}" onerror="this.parentNode.innerHTML='<i class=\\'ph ph-image\\'></i>'"></div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:2px">${p.name}</div>
+          <div style="font-size:11px;color:var(--text-3);margin-bottom:14px">${p.stats.complaints} 客诉 · ${p.stats.risks} 风险项</div>
+          <div class="sec-h"><i class="ph ph-chat-circle-dots"></i> 常见客诉</div>
+          ${ccs}
+        </div>
+        <div>
+          <div class="fl">输入客户原话</div>
+          <textarea class="ta" style="min-height:140px" id="compText" placeholder="粘贴客户投诉内容…" oninput="setState('aftersale_text_'+p.id,this.value)">${savedText}</textarea>
+          <button class="btn btn-p" style="margin-top:10px;width:100%;padding:11px" onclick="generateFor(0)"><i class="ph-bold ph-chat-circle-text"></i> 生成回复话术</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function fillAndGenerate(idx) {
+  const ta = document.getElementById('compText');
+  const c = (p.complaints || [])[idx];
+  if (ta && c) { ta.value = c.q; setState('aftersale_text_' + p.id, c.q) }
+  generateFor(idx);
+}
+
+function generateFor(idx) {
+  currentComp = idx;
+  setState('aftersale_comp_' + p.id, idx);
+  doScan({
+    title: '生成回复话术',
+    subtitle: '调取售前审核数据',
+    steps: ['匹配审核数据', '分析客诉情绪', '生成话术'],
+    icon: 'ph ph-chat-circle-text',
+    onComplete: () => { setState('aftersale_view_' + p.id, 'result'); renderResult() }
+  });
+}
+
+function renderResult() {
+  view = 'result';
+  const c = (p.complaints || [])[currentComp];
+  if (!c) { renderInput(); return; }
+
+  document.getElementById('header').innerHTML = `
+    <div class="bc"><a href="index.html">概览</a><span class="sep">/</span><a href="javascript:void(0)" onclick="renderInput()">售后话术</a><span class="sep">/</span><span class="cur">回复</span></div>
+    <div class="hd-actions"><button class="btn btn-g btn-sm" onclick="renderInput()"><i class="ph ph-arrow-left"></i> 返回</button></div>`;
+
+  const relatedRisks = p.risks.filter(r => c.tags.some(t => r.kw.includes(t) || r.problem.includes(t)));
+  const hasPresaleLink = relatedRisks.length > 0 && isScanned(p.id);
+  const aiHint = hasPresaleLink
+    ? `已关联售前扫描 ${relatedRisks.length} 项风险，话术已针对性定制。`
+    : `已匹配 ${c.ctx.length} 条历史记录。`;
+
+  const riskCards = relatedRisks.map(r =>
+    `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--r-sm);font-size:11px;margin-bottom:6px">
+      <span class="tag tag-${r.lc}" style="white-space:nowrap;flex-shrink:0">${r.level}</span>
+      <div><strong>${r.kw}</strong><div style="color:var(--text-3);margin-top:2px">${r.problem}</div></div>
+    </div>`).join('');
+
+  const ctxBrief = c.ctx.slice(0, 2).map(t => `<div style="font-size:10px;color:var(--text-3);padding:2px 0">· ${t}</div>`).join('');
+
+  const fullReply = c.steps.map(s => s.x).join('\n\n');
+
+  const thumbSrc = (DETAIL_IMAGES[p.id] || [])[0] || p.image;
+
+  const prevReplies = getState('aftersale_history_' + p.id, []);
+  const historyHtml = prevReplies.map((h, i) => `
+    <div style="padding:10px 12px;background:var(--bg);border-radius:var(--r-sm);margin-bottom:8px;font-size:12px">
+      <div style="color:var(--text-3);font-size:10px;margin-bottom:4px"><i class="ph ph-user"></i> 追问 ${i + 1}</div>
+      <div style="margin-bottom:4px;color:var(--text-2)">"${h.q}"</div>
+      <div style="color:var(--text-1);padding:6px 8px;background:#fff;border-radius:var(--r-sm)">${h.a}</div>
+    </div>`).join('');
+
+  document.getElementById('content').innerHTML = `
+    <div class="au">
+      <div style="font-size:11px;color:var(--text-3);padding:6px 10px;background:var(--accent-bg);border-radius:var(--r);margin-bottom:16px;display:flex;align-items:center;gap:6px" class="au d1">
+        <i class="ph ph-sparkle" style="color:var(--accent)"></i> <strong style="color:var(--text-2)">AI</strong> ${aiHint}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:16px">
+        <div class="au d1">
+          <div class="panel" style="border-left:3px solid var(--danger)">
+            <div class="panel-hd" style="border:none;padding-bottom:4px"><span style="font-size:11px">客户原话</span></div>
+            <div class="panel-bd" style="padding-top:0">
+              <div style="font-size:13px;line-height:1.6;color:var(--text-1)">"${c.q}"</div>
+              <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">${c.tags.map(t => `<span class="tag tag-o">${t}</span>`).join('')}</div>
+              <div style="margin-top:10px;width:60px;height:80px;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--bd);cursor:pointer" onclick="openModal('<img src=\\'${thumbSrc}\\' style=\\'width:100%;border-radius:var(--r)\\'>')">
+                <img src="${thumbSrc}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.style.display='none'">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="au d2">
+          <div class="panel">
+            <div class="panel-hd" style="border:none;padding-bottom:4px"><span style="font-size:11px">风险定位</span></div>
+            <div class="panel-bd" style="padding-top:0">
+              ${riskCards || '<div style="font-size:11px;color:var(--text-3)">无关联风险项</div>'}
+              ${ctxBrief ? `<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--bd-l)">${ctxBrief}</div>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="au d3">
+          <div class="panel" style="border-color:var(--accent)">
+            <div class="panel-hd" style="border-color:var(--accent-light)"><span style="font-size:11px"><i class="ph ph-sparkle" style="color:var(--accent);font-size:13px;vertical-align:-1px"></i> 建议回复</span></div>
+            <div class="panel-bd">
+              <div style="font-size:13px;line-height:1.7;color:var(--text-1)">${c.steps.map(s => `<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:600;color:var(--accent);margin-bottom:2px">${s.t}</div>${s.x}</div>`).join('')}</div>
+              <div style="margin-top:12px;display:flex;gap:6px">
+                <button class="btn btn-p" onclick="navigator.clipboard.writeText(\`${fullReply.replace(/`/g, "'")}\`);toast('已复制回复')"><i class="ph ph-copy"></i> 复制回复</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      ${historyHtml ? `<div style="margin-top:16px" class="au d4"><div class="sec-h"><i class="ph ph-chat-circle-dots"></i> 对话记录</div>${historyHtml}</div>` : ''}
+      <div style="margin-top:16px;padding:14px;border:1px solid var(--bd);border-radius:var(--r);background:#fff" class="au d4">
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:6px"><i class="ph ph-chat-circle"></i> 客户追问</div>
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <textarea class="ta" style="min-height:50px;flex:1" id="followupText" placeholder="输入客户新问题，继续生成回复…"></textarea>
+          <button class="btn btn-p" style="height:42px;white-space:nowrap" onclick="doFollowup()"><i class="ph ph-paper-plane-tilt"></i> 生成</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function doFollowup() {
+  const ta = document.getElementById('followupText');
+  const q = (ta || {}).value || '';
+  if (!q.trim()) { toast('请输入客户问题'); return }
+  const c = (p.complaints || [])[currentComp];
+  if (!c) return;
+  const mockAnswer = '感谢您的追问。根据产品情况和售前审核数据，' + c.steps[0].x + ' 如有更多疑问请随时提出，我们会持续跟进处理。';
+  const history = getState('aftersale_history_' + p.id, []);
+  history.push({ q: q.trim(), a: mockAnswer });
+  setState('aftersale_history_' + p.id, history);
+  ta.value = '';
+  renderResult();
+}
+
+if (view === 'result' && (p.complaints || [])[currentComp]) {
+  renderResult();
+} else {
+  renderInput();
+}
+</script>
+</body>
+</html>

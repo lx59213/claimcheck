@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ClaimCheck · 概览</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <aside id="sidebar"></aside>
+  <div class="main">
+    <div class="main-hd">
+      <div class="bc"><span class="cur">概览</span></div>
+    </div>
+    <div class="main-bd" id="content"></div>
+  </div>
+</div>
+<script src="app.js"></script>
+<script>
+document.body.insertAdjacentHTML('beforeend', sharedOverlay());
+renderSidebar('home');
+
+const all = getAllProducts();
+const scannedList = all.filter(p => isScanned(p.id));
+const scannedCount = scannedList.length;
+const totalRisks = scannedList.reduce((a, p) => a + p.stats.risks, 0);
+const totalComplaints = scannedList.reduce((a, p) => a + p.stats.complaints, 0);
+
+const productCards = all.map(p => {
+  const sc = isScanned(p.id);
+  const dotColor = sc ? (STATUS_COLOR[p.status] || 'var(--ok)') : 'var(--text-4)';
+  const statusHtml = sc
+    ? `<div style="display:flex;gap:10px;margin-top:8px">
+        <div><span style="font-size:18px;font-weight:700;color:${p.stats.highRisk > 0 ? 'var(--danger)' : 'var(--text-1)'}">${p.stats.risks}</span><span style="font-size:10px;color:var(--text-3);margin-left:3px">风险</span></div>
+        <div><span style="font-size:18px;font-weight:700;color:${p.stats.complaints > 3 ? 'var(--warn)' : 'var(--text-1)'}">${p.stats.complaints}</span><span style="font-size:10px;color:var(--text-3);margin-left:3px">客诉</span></div>
+      </div>`
+    : '<div style="margin-top:10px"><span class="tag" style="background:var(--bg);color:var(--text-3)">待审核</span></div>';
+  return `<div class="arc-card" onclick="setCurrentProductId('${p.id}');location.href='presale.html'" style="display:flex;gap:14px;align-items:flex-start">
+    <img src="${p.image}" style="width:56px;height:56px;border-radius:var(--r);object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+        <span style="width:7px;height:7px;border-radius:50%;background:${dotColor};flex-shrink:0"></span>
+        <span style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-3)">${p.industry} · ${p.platform}</div>
+      ${statusHtml}
+    </div>
+  </div>`;
+}).join('');
+
+document.getElementById('content').innerHTML = `
+  <div class="au">
+    <div class="kpi-grid au d1">
+      <div class="kpi" onclick="location.href='archive.html'">
+        <div class="kpi-top"><div class="kpi-ic red"><i class="ph-fill ph-warning"></i></div>${totalRisks > 0 ? '<div class="tag tag-r">需处理</div>' : ''}</div>
+        <div style="display:flex;align-items:end;justify-content:space-between">
+          <div><div class="kpi-val ${totalRisks > 0 ? 'r' : ''}">${totalRisks}</div><div class="kpi-lbl">风险项</div></div>
+          ${sparkline([3,4,8,6,7,totalRisks || 1], 64, 24, totalRisks > 0 ? 'var(--danger)' : 'var(--text-4)')}
+        </div>
+      </div>
+      <div class="kpi" onclick="location.href='aftersale.html'">
+        <div class="kpi-top"><div class="kpi-ic amber"><i class="ph-fill ph-chat-circle-text"></i></div>${totalComplaints > 0 ? '<div class="tag tag-o">客诉</div>' : ''}</div>
+        <div style="display:flex;align-items:end;justify-content:space-between">
+          <div><div class="kpi-val ${totalComplaints > 0 ? 'o' : ''}">${totalComplaints}</div><div class="kpi-lbl">本月客诉</div></div>
+          ${sparkline([2,1,5,3,4,totalComplaints || 1], 64, 24, totalComplaints > 0 ? 'var(--warn)' : 'var(--text-4)')}
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-top"><div class="kpi-ic green"><i class="ph-fill ph-shield-check"></i></div><div class="tag tag-g">${scannedCount}/${all.length}</div></div>
+        <div style="display:flex;align-items:end;justify-content:space-between">
+          <div><div class="kpi-val">${all.length}</div><div class="kpi-lbl">商品</div></div>
+          ${sparkline([1,1,2,2,3,all.length], 64, 24, 'var(--ok)')}
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-h au d2"><i class="ph ph-tote"></i> 商品</div>
+    <div class="arc-grid au d2" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">${productCards}</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px">
+      <div class="au d3">
+        <div class="sec-h"><i class="ph ph-clock-countdown"></i> 系统动态 <span style="font-size:10px;color:var(--text-3);font-weight:400">AI 实时监控</span></div>
+        <div class="tl-item"><div class="tl-time">2h</div><div class="tl-dot" style="background:var(--danger)"></div><div class="tl-text"><a onclick="setCurrentProductId('jacket');location.href='aftersale.html'" href="javascript:void(0)">收到客诉：口袋没压胶</a><span style="font-size:10px;color:var(--text-3);margin-left:4px">来自天猫客服 · 冲锋衣</span></div></div>
+        <div class="tl-item"><div class="tl-time">5h</div><div class="tl-dot" style="background:var(--danger)"></div><div class="tl-text"><a onclick="setCurrentProductId('base');location.href='presale.html'" href="javascript:void(0)">AI 检测到医疗暗示风险</a><span style="font-size:10px;color:var(--text-3);margin-left:4px">打底衫详情页 · 自动扫描</span></div></div>
+        <div class="tl-item"><div class="tl-time">8h</div><div class="tl-dot" style="background:var(--warn)"></div><div class="tl-text"><a href="archive.html">平台规则更新：违禁词清单</a><span style="font-size:10px;color:var(--text-3);margin-left:4px">天猫 · +12项</span></div></div>
+        <div class="tl-item"><div class="tl-time">1d</div><div class="tl-dot" style="background:var(--ok)"></div><div class="tl-text"><a onclick="setCurrentProductId('jacket');location.href='presale.html'" href="javascript:void(0)">冲锋衣审核完成</a><span style="font-size:10px;color:var(--text-3);margin-left:4px">第3次 · 3高危 1中危 1低危</span></div></div>
+      </div>
+      <div class="au d4">
+        <div class="sec-h"><i class="ph ph-sparkle"></i> AI 洞察</div>
+        <div class="ai-card"><strong>"全压胶"客诉+15%</strong>（47件）。改措辞后存量用户仍按旧理解。<div class="ai-link" onclick="openTrend('jacket')">查看趋势 <i class="ph ph-arrow-right"></i></div></div>
+        <div class="ai-card"><strong>降燥打底衫 多项风险叠加</strong> 医疗暗示 + 功能宣称缺证据 + 尺码认知偏差。<div class="ai-link" onclick="setCurrentProductId('base');location.href='presale.html'">查看 <i class="ph ph-arrow-right"></i></div></div>
+      </div>
+    </div>
+  </div>`;
+</script>
+</body>
+</html>

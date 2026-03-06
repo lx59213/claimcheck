@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ClaimCheck · 风险历史</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <aside id="sidebar"></aside>
+  <div class="main">
+    <div class="main-hd" id="header"></div>
+    <div class="main-bd" id="content"></div>
+  </div>
+</div>
+<script src="app.js"></script>
+<script>
+document.body.insertAdjacentHTML('beforeend', sharedOverlay());
+renderSidebar('history');
+
+const p = getProduct();
+const pid = getCurrentProductId();
+const sc = isScanned(pid);
+const td = TREND_DATA[pid];
+
+document.getElementById('header').innerHTML = `
+  <div class="bc"><a href="index.html">概览</a><span class="sep">/</span><span class="cur">${p.name} · 风险历史</span></div>`;
+
+const highCount = p.risks.filter(r => r.lc === 'r').length;
+const midCount = p.risks.filter(r => r.lc === 'o').length;
+const lowCount = p.risks.filter(r => r.lc === 'g').length;
+
+const mockHistory = [
+  { date: '5天前', action: '第3次审核', result: `高危 ${highCount} · 中危 ${midCount} · 低危 ${lowCount}`, note: 'AI 自动检测完成' },
+  { date: '6周前', action: '第2次审核', result: `高危 ${highCount + 1} · 中危 ${midCount}`, note: '修复1项后复查' },
+  { date: '4个月前', action: '首次审核', result: `高危 ${highCount + 2} · 中危 ${midCount + 1}`, note: '首次上架前审核' }
+];
+
+const historyRows = mockHistory.map((h, i) => `
+  <div class="ai-tl-item au d${i + 1}">
+    <div class="ai-tl-ic"><i class="ph ph-${i === 0 ? 'check-circle' : 'clock'}"></i></div>
+    <div class="ai-tl-txt">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+        <strong>${h.action}</strong>
+        <span style="font-size:10px;color:var(--text-3)">${h.date}</span>
+      </div>
+      <div style="font-size:11px">${h.result}</div>
+      <div style="font-size:10px;color:var(--text-3);margin-top:1px">${h.note}</div>
+    </div>
+  </div>`).join('');
+
+const adopted = getAdopted(pid);
+const adoptedCount = adopted.length;
+const riskSummary = sc ? p.risks.map(r => {
+  const fixed = adopted.includes(r.kw);
+  return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd-l);font-size:12px">
+    <span class="tag tag-${fixed ? 'g' : r.lc}">${fixed ? '已修复' : r.level}</span>
+    <span style="font-weight:500${fixed ? ';text-decoration:line-through;color:var(--text-3)' : ''}">${r.kw}</span>
+    <span style="color:var(--text-3);font-size:11px;margin-left:auto">${r.category}</span>
+  </div>`;
+}).join('') : '<div style="text-align:center;padding:24px;color:var(--text-3);font-size:12px">尚未扫描，暂无风险数据</div>';
+const adoptLabel = adoptedCount > 0
+  ? `<span style="font-size:10px;color:var(--ok);margin-left:auto"><i class="ph-bold ph-check-circle" style="vertical-align:-1px"></i> ${adoptedCount}/${p.risks.length} 已修复</span>` : '';
+
+document.getElementById('content').innerHTML = `
+  <div class="au">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div class="sec-h au d1"><i class="ph ph-chart-line-up"></i> 客诉趋势</div>
+        <div class="panel au d1" style="padding:16px;margin-bottom:16px">
+          ${td ? trendChart(td, STATUS_COLOR[p.status] || 'var(--accent)') : '<div style="color:var(--text-3);font-size:12px;text-align:center;padding:16px">暂无趋势数据</div>'}
+        </div>
+        <div class="sec-h au d2"><i class="ph ph-list-checks"></i> 当前风险项 ${adoptLabel}</div>
+        <div class="panel au d2" style="padding:14px">${riskSummary}</div>
+      </div>
+      <div>
+        <div class="sec-h au d1"><i class="ph ph-clock-counter-clockwise"></i> 扫描历史</div>
+        <div class="au d2">${historyRows}</div>
+      </div>
+    </div>
+  </div>`;
+</script>
+</body>
+</html>

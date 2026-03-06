@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ClaimCheck · 风险总览</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <aside id="sidebar"></aside>
+  <div class="main">
+    <div class="main-hd">
+      <div class="bc"><a href="index.html">概览</a><span class="sep">/</span><span class="cur">风险总览</span></div>
+    </div>
+    <div class="main-bd" id="content"></div>
+  </div>
+</div>
+<script src="app.js"></script>
+<script>
+document.body.insertAdjacentHTML('beforeend', sharedOverlay());
+renderSidebar('archive');
+
+const all = getAllProducts();
+
+const trendColors = { danger: 'var(--danger)', warning: 'var(--warn)', safe: 'var(--ok)' };
+
+const cards = all.map(p => {
+  const td = TREND_DATA[p.id];
+  const spk = td ? sparkline(td.vals, 80, 28, trendColors[p.status] || 'var(--accent)') : '';
+  const adopted = getAdopted(p.id);
+  const adoptedCount = adopted.length;
+  const totalRisks = p.risks.length;
+  const adoptPct = totalRisks > 0 ? Math.round(adoptedCount / totalRisks * 100) : 0;
+  const riskBar = totalRisks > 0 ? p.risks.map(r => {
+    const isFixed = adopted.includes(r.kw);
+    const c = isFixed ? 'var(--ok)' : r.lc === 'r' ? 'var(--danger)' : r.lc === 'o' ? 'var(--warn)' : 'var(--ok)';
+    const w = 100 / totalRisks;
+    return `<div class="arc-seg" style="width:${w}%;background:${c}"></div>`;
+  }).join('') : '<div class="arc-seg" style="width:100%;background:var(--ok)"></div>';
+  return `<div class="arc-card" onclick="setCurrentProductId('${p.id}');location.href='presale.html'">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div class="arc-name" style="margin:0">${p.name}</div>
+      <div style="cursor:pointer" onclick="event.stopPropagation();openTrend('${p.id}')" title="查看趋势">${spk}</div>
+    </div>
+    <div class="arc-nums">
+      <div class="arc-stat"><div class="arc-v">${p.stats.risks}</div><div class="arc-label">风险项</div></div>
+      <div class="arc-stat"><div class="arc-v ${p.stats.highRisk > 0 ? 'r' : ''}">${p.stats.highRisk}</div><div class="arc-label">高危</div></div>
+      <div class="arc-stat"><div class="arc-v" style="color:${adoptedCount > 0 ? 'var(--ok)' : 'var(--text-3)'}">${adoptedCount}/${totalRisks}</div><div class="arc-label">已修复</div></div>
+    </div>
+    <div class="arc-bar">${riskBar}</div>
+    ${adoptedCount > 0 ? `<div style="font-size:10px;color:var(--ok);margin-top:6px"><i class="ph-bold ph-check-circle" style="vertical-align:-1px"></i> 修复进度 ${adoptPct}%</div>` : ''}
+  </div>`;
+}).join('');
+
+const fixRows = all.flatMap(prod => {
+  const adopted = getAdopted(prod.id);
+  return prod.risks.map(r => {
+    const fixed = adopted.includes(r.kw);
+    return { prod: prod.name, pid: prod.id, kw: r.kw, level: r.level, lc: r.lc, category: r.category, fixed };
+  });
+});
+
+const totalFixed = fixRows.filter(r => r.fixed).length;
+const totalAll = fixRows.length;
+const globalPct = totalAll > 0 ? Math.round(totalFixed / totalAll * 100) : 0;
+
+const highRisks = fixRows.filter(r => r.lc === 'r');
+const midRisks  = fixRows.filter(r => r.lc === 'o');
+const lowRisks  = fixRows.filter(r => r.lc === 'g');
+
+function riskItem(r) {
+  return `<div style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:${r.fixed ? 'var(--ok-bg,#f0faf0)' : '#fff'};border:1px solid ${r.fixed ? 'var(--ok)' : 'var(--bd)'};border-radius:var(--r-sm);font-size:12px;opacity:${r.fixed ? '0.65' : '1'}">
+    <div style="min-width:0;flex:1">
+      <div style="font-weight:500${r.fixed ? ';text-decoration:line-through;color:var(--text-3)' : ''}">${r.kw}</div>
+      <div style="font-size:10px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.prod}</div>
+    </div>
+    ${r.fixed ? '<i class="ph-bold ph-check-circle" style="color:var(--ok);font-size:13px;flex-shrink:0"></i>' : `<a href="javascript:void(0)" onclick="setCurrentProductId('${r.pid}');location.href='presale.html'" style="font-size:10px;color:var(--accent);white-space:nowrap;flex-shrink:0">修复 →</a>`}
+  </div>`;
+}
+
+function riskColumn(title, color, items) {
+  const fixedCount = items.filter(r => r.fixed).length;
+  const pct = items.length > 0 ? Math.round(fixedCount / items.length * 100) : 100;
+  return `<div style="flex:1;min-width:200px">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+      <span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block"></span>
+      <span style="font-weight:600;font-size:13px">${title}</span>
+      <span style="font-size:10px;color:var(--text-3);margin-left:auto">${fixedCount}/${items.length}</span>
+    </div>
+    <div style="height:4px;background:var(--bd-l);border-radius:2px;overflow:hidden;margin-bottom:10px"><div style="width:${pct}%;height:100%;background:${color};border-radius:2px;transition:width .4s"></div></div>
+    <div style="display:flex;flex-direction:column;gap:6px">${items.length > 0 ? items.map(riskItem).join('') : '<div style="font-size:11px;color:var(--text-3);text-align:center;padding:12px">无</div>'}</div>
+  </div>`;
+}
+
+const aiCards = [
+  { icon: 'ph-brain', text: '"全压胶"在户外行业≠每处都压，消费者理解偏差率 87%' },
+  { icon: 'ph-graph', text: '"不易长痘"属医疗暗示，已标记高危' },
+  { icon: 'ph-lightning', text: '"无氟涂层"与"拒油等级4"技术悖论，已关联专家观点' },
+  { icon: 'ph-trend-up', text: '打底衫退换率偏高 + 功能宣称缺报告，多项风险叠加' }
+];
+const aiHtml = aiCards.map(c => `<div style="flex:1;min-width:180px;padding:10px 12px;background:#fff;border:1px solid var(--bd);border-radius:var(--r-sm);font-size:11px;line-height:1.5;color:var(--text-2)"><i class="ph ${c.icon}" style="color:var(--accent);margin-right:4px"></i>${c.text}</div>`).join('');
+
+document.getElementById('content').innerHTML = `
+  <div class="au">
+    <div class="arc-grid au d1">${cards}</div>
+
+    <div class="au d2">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div class="sec-h" style="margin:0"><i class="ph ph-wrench"></i> 修复追踪</div>
+        <div style="flex:1;height:5px;background:var(--bd-l);border-radius:3px;overflow:hidden"><div style="width:${globalPct}%;height:100%;background:var(--ok);border-radius:3px;transition:width .4s"></div></div>
+        <span style="font-size:11px;color:var(--text-2);white-space:nowrap">${totalFixed}/${totalAll} 已修复（${globalPct}%）</span>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        ${riskColumn('高危', 'var(--danger)', highRisks)}
+        ${riskColumn('中危', 'var(--warn)', midRisks)}
+        ${riskColumn('低危', 'var(--ok)', lowRisks)}
+      </div>
+    </div>
+
+    <div class="au d3" style="margin-top:8px">
+      <div class="sec-h" style="cursor:pointer;user-select:none" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'flex':'none';this.querySelector('.ai-caret').style.transform=c.style.display==='none'?'':'rotate(90deg)'"><i class="ph ph-sparkle"></i> AI 学习记录 <i class="ph ph-caret-right ai-caret" style="font-size:12px;transition:transform .2s;margin-left:4px"></i></div>
+      <div style="display:none;gap:10px;flex-wrap:wrap">${aiHtml}</div>
+    </div>
+  </div>`;
+</script>
+</body>
+</html>

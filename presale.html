@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ClaimCheck · 售前扫描</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <aside id="sidebar"></aside>
+  <div class="main">
+    <div class="main-hd" id="header"></div>
+    <div class="main-bd" id="content"></div>
+  </div>
+</div>
+<script src="app.js"></script>
+<script>
+document.body.insertAdjacentHTML('beforeend', sharedOverlay());
+renderSidebar('presale');
+
+let view = 'input';
+const p = getProduct();
+
+function renderInput() {
+  view = 'input';
+  document.getElementById('header').innerHTML = `<div class="bc"><a href="index.html">概览</a><span class="sep">/</span><span class="cur">售前扫描</span></div>`;
+  document.getElementById('content').innerHTML = `
+    <div class="au">
+      <div style="display:grid;grid-template-columns:220px 1fr;gap:20px">
+        <div>
+          <div class="prod-img" style="margin-bottom:10px"><img src="${p.image}" onerror="this.parentNode.innerHTML='<i class=\\'ph ph-image\\'></i>商品图'"></div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:3px">${p.name}</div>
+          <div style="font-size:11px;color:var(--text-3);margin-bottom:12px">${p.industry} · ${p.platform}</div>
+          <button class="btn btn-o btn-sm" style="width:100%;margin-bottom:8px" onclick="openUpload()"><i class="ph ph-image"></i> 上传详情页图片</button>
+          <div style="display:flex;gap:6px">
+            <select class="sel" style="flex:1">${['户外运动','服饰','美妆','食品'].map(i=>`<option${i===p.industry?' selected':''}>${i}</option>`).join('')}</select>
+            <select class="sel" style="flex:1">${['天猫','抖音','拼多多','京东'].map(i=>`<option${i===p.platform?' selected':''}>${i}</option>`).join('')}</select>
+          </div>
+        </div>
+        <div>
+          <textarea class="ta" style="min-height:300px" id="scanText" placeholder="粘贴详情页文案…" oninput="setState('presale_text_'+p.id,this.value)">${getState('presale_text_' + p.id, p.text)}</textarea>
+          <button class="btn btn-p" onclick="startScan()" style="width:100%;margin-top:12px;padding:11px"><i class="ph-bold ph-scan"></i> 开始扫描</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function startScan() {
+  const textEl = document.getElementById('scanText');
+  if (textEl && textEl.value) setState('presale_text_' + p.id, textEl.value);
+  doScan({
+    title: '模拟消费者视角',
+    subtitle: '约 3 秒',
+    steps: ['违禁词检测', '平台规则匹配', '认知偏差分析'],
+    icon: 'ph ph-brain',
+    onComplete: () => { markScanned(p.id); renderResult(); }
+  });
+}
+
+function renderResult() {
+  view = 'result';
+  document.getElementById('header').innerHTML = `
+    <div class="bc"><a href="index.html">概览</a><span class="sep">/</span><a href="javascript:void(0)" onclick="renderInput()">售前扫描</a><span class="sep">/</span><span class="cur">结果</span></div>
+    <div class="hd-actions">
+      <button class="btn btn-g btn-sm" onclick="renderInput()"><i class="ph ph-arrow-counter-clockwise"></i> 重扫</button>
+      <button class="btn btn-o btn-sm" onclick="openPDF()"><i class="ph ph-file-pdf"></i> 导出</button>
+    </div>`;
+
+  const highCount = p.risks.filter(r => r.lc === 'r').length;
+  const midCount = p.risks.filter(r => r.lc === 'o').length;
+  const lowCount = p.risks.filter(r => r.lc === 'g').length;
+
+  let ht = p.text;
+  const hlDone = new Set();
+  p.risks.forEach(r => {
+    if (hlDone.has(r.kw)) return;
+    const hlClass = r.lc === 'r' ? 'hl-v' : 'hl-c';
+    const target = ht.includes(r.kw) ? r.kw : (ht.includes(r.original) ? r.original : null);
+    if (target) {
+      ht = ht.replace(target, `<span class="${hlClass}" onclick="scrollToCard('${r.kw}')">${target}</span>`);
+      hlDone.add(r.kw);
+    }
+  });
+
+  const adopted = getAdopted(p.id);
+  const cards = p.risks.map((r, i) => {
+    const done = adopted.includes(r.kw);
+    const btnHtml = done
+      ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--ok);font-weight:600"><i class="ph-bold ph-check-circle"></i> 已采用</span>`
+      : `<button class="btn btn-p btn-sm" onclick="event.stopPropagation();doAdopt('${r.kw}',this)"><i class="ph ph-check"></i> 采用</button><button class="btn btn-o btn-sm" onclick="event.stopPropagation();toast('已忽略')">忽略</button>`;
+    return `<div class="rc ${done ? 'open' : ''}" id="rc-${encodeURIComponent(r.kw)}" onclick="this.classList.toggle('open')">
+      <div class="rc-h"><span class="tag tag-${r.lc}">${r.category}</span><span class="rc-kw">${r.kw}</span><span class="rc-lv tag tag-${r.lc}">${r.level}</span>${done ? '<span style="font-size:10px;color:var(--ok);margin-left:auto;margin-right:6px">已修复</span>' : ''}<span class="rc-ch"><i class="ph ph-caret-down"></i></span></div>
+      <div class="rc-body"><div class="rc-in">
+        <div class="rc-ev">${r.problem}</div>
+        <div class="rc-ev" style="background:var(--bg);border-left:2px solid var(--bd)">${r.evidence}</div>
+        <div class="rc-fix"><div class="rc-fix-l">修复建议</div><div class="rc-fix-old">${r.original}</div><div>${r.fix.replace(/\n/g, '<br>')}</div></div>
+        <div style="display:flex;gap:6px">${btnHtml}</div>
+      </div></div></div>`;
+  }).join('');
+
+  const hasSomeRisk = p.risks.length > 0;
+
+  const aiMsg = {
+    jacket: '"全压胶"相关客诉持续上升（+15%）。文案仍有类似表述。',
+    tshirt: '凉感宣称缺乏客观数据支撑，建议补充 Q-max 检测。',
+    base: '检测到医疗暗示、功能性宣称缺证据、尺码认知偏差，多项高危。'
+  };
+
+  const imgs = DETAIL_IMAGES[p.id] || [p.image];
+  const imgStrip = `<div style="display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px" class="au d1">
+    ${imgs.map((u, i) => `<div style="position:relative;flex-shrink:0;width:100px;height:130px;border-radius:var(--r);overflow:hidden;border:1px solid var(--bd);cursor:pointer" onclick="openModal('<img src=\\'${u}\\' style=\\'width:100%;border-radius:var(--r)\\'>');event.stopPropagation()">
+      <img src="${u}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-3)\\'>详情页${i+1}</div>'">
+      <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.5));color:#fff;font-size:9px;padding:4px 6px;font-weight:500">详情页 ${i+1}</div>
+    </div>`).join('')}
+  </div>`;
+
+  document.getElementById('content').innerHTML = `
+    <div class="au">
+      ${hasSomeRisk ? `<div class="alert-ai au d1"><i class="ph-fill ph-lightbulb"></i><div><strong>AI：</strong>${aiMsg[p.id] || `发现 ${p.risks.length} 处风险项。`}</div></div>` : ''}
+      <div class="stat-row au d1">
+        ${highCount > 0 ? `<span class="tag tag-r" style="padding:4px 10px;font-size:11px"><i class="ph ph-warning" style="font-size:12px"></i> 高危 ${highCount}</span>` : ''}
+        ${midCount > 0 ? `<span class="tag tag-o" style="padding:4px 10px;font-size:11px"><i class="ph ph-eye" style="font-size:12px"></i> 中危 ${midCount}</span>` : ''}
+        ${lowCount > 0 ? `<span class="tag tag-g" style="padding:4px 10px;font-size:11px"><i class="ph ph-shield-check" style="font-size:12px"></i> 低危 ${lowCount}</span>` : ''}
+        ${hasSomeRisk ? `<div style="margin-left:auto">${adopted.length === p.risks.length ? '<span style="font-size:11px;color:var(--ok);font-weight:600"><i class="ph-bold ph-checks" style="vertical-align:-1px"></i> 全部已采用</span>' : `<button class="btn btn-p btn-sm" onclick="doAdoptAll()"><i class="ph ph-checks"></i> 全部采用</button>`}</div>` : ''}
+      </div>
+      ${imgStrip}
+      <div style="display:flex;gap:8px;margin-bottom:14px" class="au d2">
+        <button class="btn btn-o btn-sm" onclick="document.getElementById('supplement').style.display=document.getElementById('supplement').style.display==='none'?'block':'none'"><i class="ph ph-plus"></i> 补充文案/图片</button>
+      </div>
+      <div id="supplement" style="display:none;margin-bottom:16px;padding:14px;border:1px dashed var(--bd);border-radius:var(--r)">
+        <textarea class="ta" style="min-height:80px;margin-bottom:8px" id="supplementText" placeholder="补充遗漏的文案内容…"></textarea>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-o btn-sm" onclick="openUpload()"><i class="ph ph-image"></i> 补充图片</button>
+          <button class="btn btn-p btn-sm" onclick="doSupplement()"><i class="ph ph-arrow-clockwise"></i> 重新扫描（含补充）</button>
+        </div>
+      </div>
+      ${hasSomeRisk ? `<div class="split au d2">
+        <div class="panel">
+          <div class="panel-hd"><span><i class="ph ph-file-text" style="font-size:14px;vertical-align:-2px"></i> 原文</span><span style="font-size:10px;color:var(--text-3)">点击高亮词定位</span></div>
+          <div class="panel-bd" style="font-size:13px;line-height:2">${ht.replace(/\n/g, '<br>')}</div>
+        </div>
+        <div>${cards}</div>
+      </div>` : `<div class="safe-box au d2"><i class="ph-fill ph-shield-check"></i><div class="safe-t">文案安全</div><div class="safe-s">未检测到风险项。建议定期复查。</div></div>`}
+    </div>`;
+}
+
+function scrollToCard(kw) {
+  const el = document.getElementById('rc-' + encodeURIComponent(kw));
+  if (!el) return;
+  el.classList.add('open');
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.remove('flash');
+  void el.offsetWidth;
+  el.classList.add('flash');
+  el.addEventListener('animationend', () => el.classList.remove('flash'), { once: true });
+}
+
+function doAdopt(kw, btn) {
+  adoptRisk(kw, p.id);
+  const card = btn ? btn.closest('.rc') : null;
+  if (btn && btn.parentNode) btn.parentNode.innerHTML = '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--ok);font-weight:600"><i class="ph-bold ph-check-circle"></i> 已采用</span>';
+  if (card) { const hdr = card.querySelector('.rc-lv'); if (hdr) hdr.insertAdjacentHTML('afterend','<span style="font-size:10px;color:var(--ok);margin-left:auto;margin-right:6px">已修复</span>') }
+  toast('已采用修复建议');
+  pulseNav();
+  if (getAdopted(p.id).length === p.risks.length) {
+    setTimeout(() => renderResult(), 300);
+  }
+}
+function doAdoptAll() {
+  adoptAllRisks(p.id);
+  toast('已全部采用修复建议');
+  pulseNav();
+  renderResult();
+}
+
+function doSupplement() {
+  const extra = (document.getElementById('supplementText') || {}).value || '';
+  if (extra.trim()) {
+    const cur = getState('presale_text_' + p.id, p.text);
+    setState('presale_text_' + p.id, cur + '\n' + extra.trim());
+  }
+  toast('已合并补充内容，重新扫描');
+  startScan();
+}
+
+if (isScanned(p.id)) {
+  renderResult();
+} else {
+  renderInput();
+}
+</script>
+</body>
+</html>
