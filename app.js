@@ -12,23 +12,23 @@ const PRODUCTS = {
     status: 'danger',
     text: 'STORMCREW 三合一冲锋衣，全身覆盖无氟防水涂层，全压胶工艺（所有接缝热风压胶），100% 防水，户外极端环境防护。采用最先进的防水材料，无氟涂层环保健康，拒油等级 4 级。',
     risks: [
-      { category:'违禁词', kw:'最先进', level:'高危', lc:'r',
+      { category:'违禁词', dim:'合规', kw:'最先进', level:'高危', lc:'r',
         problem:'《广告法》第九条禁止"国家级""最高级""最佳"等绝对化用语',
         evidence:'直接违反广告法。天猫将限流处罚。',
         original:'采用最先进的防水材料', fix:'改为"高性能防水材料"' },
-      { category:'绝对化用语', kw:'100% 防水', level:'高危', lc:'r',
+      { category:'绝对化用语', dim:'合规', kw:'100% 防水', level:'高危', lc:'r',
         problem:'《广告法》禁止绝对化用语，任何面料无法做到100%防水',
         evidence:'投诉即判罚，职业打假人重点目标。',
         original:'100% 防水，户外极端环境防护', fix:'改为"高效防水"或"符合国标防水标准"' },
-      { category:'虚假宣传争议', kw:'全压胶', level:'高危', lc:'r',
+      { category:'虚假宣传争议', dim:'打假', kw:'全压胶', level:'高危', lc:'r',
         problem:'宣称"所有裁片接缝处均压胶"，实际口袋和领子没有压胶',
         evidence:'博主"H先生小韩哥"发视频指出口袋无压胶。专家姚蔚铭确认"口袋不压胶普遍，但与宣传矛盾"。曾引发舆论风波。',
         original:'所有裁片接缝处均使用无缝热风压胶', fix:'改为"主要接缝处全压胶（肩部、腋下、拉链等），内部压胶10米+，符合国标 GB/T 32624-2023"' },
-      { category:'技术悖论', kw:'无氟涂层', level:'中危', lc:'o',
+      { category:'技术悖论', dim:'打假', kw:'无氟涂层', level:'中危', lc:'o',
         problem:'"无氟涂层"与"拒油等级4级"存在技术矛盾——无氟拒水剂无法达到4级拒油',
         evidence:'送检 PFOA 0.90μg/㎡（国标<1.0，合格）。专家姚蔚铭："实现拒油大概率需含氟物质"。官方再次送检大货 PFOA/PFOS 未检出。',
         original:'全身覆盖无氟防水涂层', fix:'方案1：删除"无氟"，改为"防水涂层"\n方案2：保留但注明"符合国标无氟整理认定标准"' },
-      { category:'认知鸿沟', kw:'全压胶', level:'低危', lc:'g',
+      { category:'认知鸿沟', dim:'认知', kw:'全压胶', level:'低危', lc:'g',
         problem:'消费者理解"全压胶"=每处都压；行业共识=主要防水接缝处压胶',
         evidence:'近30天62%客诉涉及压胶理解偏差。改措辞后存量用户仍按旧理解。',
         original:'全压胶工艺', fix:'在详情页增加图示说明"全压胶"的行业定义' }
@@ -58,7 +58,7 @@ const PRODUCTS = {
     status: 'warning',
     text: '集凉感、抗菌、速干、防晒功能于一体\n280g 重磅纯棉，领口 3% 氨纶防变形',
     risks: [
-      { category:'证据支撑不足', kw:'凉感面料', level:'中危', lc:'o',
+      { category:'证据支撑不足', dim:'打假', kw:'凉感面料', level:'中危', lc:'o',
         problem:'宣称"凉感"但未标注凉感值（Q-max）检测数据',
         evidence:'消费者质疑"凉感"是否有客观数据支撑。',
         original:'集凉感、抗菌、速干功能于一体', fix:'补充凉感值检测数据，如"Q-max ≥0.15"' }
@@ -80,19 +80,19 @@ const PRODUCTS = {
     status: 'danger',
     text: '集抗菌、速干、防螨、防静电四大功能于一体\n7A 抗菌（标准：T/GDBX 056-2022）\n螨虫防护（标准：GB/T 24253-2009）\n抗静电（标准：GB/T 12703.1-2021）\n极速秒干\n吸水速率 ≥30.1%/s\n精梳棉材质，宽松版型\n主打秋冬叠穿舒适度\n前胸后背不易长痘',
     risks: [
-      { category:'医疗暗示', kw:'不易长痘', level:'高危', lc:'r',
+      { category:'医疗暗示', dim:'合规', kw:'不易长痘', level:'高危', lc:'r',
         problem:'非医疗器械（普通服装）宣称预防痤疮等医疗功效，属高危违规',
         evidence:'违反《广告法》关于医疗功效宣传的规定。职业打假人重点投诉目标。',
         original:'前胸后背不易长痘', fix:'改为"保持肌肤清爽环境"或直接删除' },
-      { category:'证据支撑不足', kw:'7A 抗菌', level:'高危', lc:'r',
+      { category:'证据支撑不足', dim:'打假', kw:'7A 抗菌', level:'高危', lc:'r',
         problem:'标注"7A抗菌""螨虫防护""抗静电"等功能及国标编号，但未在页面展示检测报告',
         evidence:'《广告法》及电商平台规范要求：凡提及功能性宣称，必须提供第三方检测报告。职业打假或市场监管抽检中常被判"证据支撑不足"。',
         original:'7A 抗菌（标准：T/GDBX 056-2022）', fix:'方案1：每项功能后增加[查看检测报告]链接\n方案2：删除具体标准号，改为"抗菌、速干、防螨多功能面料"' },
-      { category:'数据选择性披露', kw:'吸水速率', level:'中危', lc:'o',
+      { category:'数据选择性披露', dim:'打假', kw:'吸水速率', level:'中危', lc:'o',
         problem:'仅强调吸水速率，未体现消费者更关心的"蒸发速率"（干得快不快）',
         evidence:'GB/T 21655.2 标准分为"吸湿性"和"速干性"。文案仅强调吸水速率，存在信息选择性披露。',
         original:'吸水速率 ≥30.1%/s', fix:'补充完整数据：吸水速率 ≥30.1%/s + 蒸发速率 ≥0.15g/h，或改为"极速秒干，符合 GB/T 21655.2 标准"' },
-      { category:'认知鸿沟', kw:'宽松版型', level:'低危', lc:'g',
+      { category:'认知鸿沟', dim:'认知', kw:'宽松版型', level:'低危', lc:'g',
         problem:'尺码严重偏大（需买小1-2码），超出消费者对"宽松版型"的常规理解',
         evidence:'大量用户反馈需买小1-2码。评论区出现"3XL像睡衣""袖子长3cm"等描述。退换货率最高原因。',
         original:'宽松版型', fix:'改为"超宽松版型（建议拍小1-2码）"，并在主图增加版型对比图' }
@@ -248,7 +248,7 @@ function switchProduct(id) {
 function openCreateProduct() {
   openModal(`<h3><i class="ph ph-plus-circle"></i> 创建商品</h3>
     <div style="display:flex;flex-direction:column;gap:12px">
-      <div><label class="fl">商品名称</label><input id="cp-name" class="ta" style="min-height:0;padding:10px 14px" placeholder="例：夏季防晒衣"></div>
+      <div><label class="fl">商品名称</label><input id="cp-name" class="ta" style="min-height:0;padding:12px 14px;font-size:14px;width:100%" placeholder="例：影视飓风三合一冲锋衣 STORMCREW 25 款秋冬户外防风防水"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div><label class="fl">行业</label><select id="cp-ind" class="sel" style="width:100%"><option>户外运动</option><option>服饰</option><option>美妆</option><option>食品</option></select></div>
         <div><label class="fl">平台</label><select id="cp-plat" class="sel" style="width:100%"><option>天猫</option><option>抖音</option><option>拼多多</option><option>京东</option></select></div>
@@ -290,7 +290,7 @@ function doCreateProduct() {
 /* ===== Search ===== */
 function openSearch() {
   openModal(`<h3><i class="ph ph-magnifying-glass"></i> 搜索</h3>
-    <input id="srch-input" class="ta" style="min-height:0;padding:10px 14px;margin-bottom:12px" placeholder="搜索商品、风险关键词、客诉内容…" oninput="renderSearchResults()">
+    <input id="srch-input" class="ta" style="min-height:0;padding:12px 14px;margin-bottom:12px;font-size:14px;width:100%" placeholder="搜索商品、风险关键词、客诉" oninput="renderSearchResults()">
     <div class="srch-filters" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
       <button class="btn btn-o btn-sm srch-f active" onclick="toggleFilter(this,'all')" data-f="all">全部</button>
       <button class="btn btn-o btn-sm srch-f" onclick="toggleFilter(this,'risk')" data-f="risk">风险项</button>

@@ -55,9 +55,9 @@ function startScan() {
   const textEl = document.getElementById('scanText');
   if (textEl && textEl.value) setState('presale_text_' + p.id, textEl.value);
   doScan({
-    title: '模拟消费者视角',
+    title: '多维度风险扫描',
     subtitle: '约 3 秒',
-    steps: ['违禁词检测', '平台规则匹配', '认知偏差分析'],
+    steps: ['合规 · 违禁词与法规', '防控 · 职业打假风险', '认知 · 消费者理解偏差'],
     icon: 'ph ph-brain',
     onComplete: () => { markScanned(p.id); renderResult(); }
   });
@@ -95,7 +95,7 @@ function renderResult() {
       ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--ok);font-weight:600"><i class="ph-bold ph-check-circle"></i> 已采用</span>`
       : `<button class="btn btn-p btn-sm" onclick="event.stopPropagation();doAdopt('${r.kw}',this)"><i class="ph ph-check"></i> 采用</button><button class="btn btn-o btn-sm" onclick="event.stopPropagation();toast('已忽略')">忽略</button>`;
     return `<div class="rc ${done ? 'open' : ''}" id="rc-${encodeURIComponent(r.kw)}" onclick="this.classList.toggle('open')">
-      <div class="rc-h"><span class="tag tag-${r.lc}">${r.category}</span><span class="rc-kw">${r.kw}</span><span class="rc-lv tag tag-${r.lc}">${r.level}</span>${done ? '<span style="font-size:10px;color:var(--ok);margin-left:auto;margin-right:6px">已修复</span>' : ''}<span class="rc-ch"><i class="ph ph-caret-down"></i></span></div>
+      <div class="rc-h"><span class="tag" style="background:var(--bg);color:var(--text-2);font-size:9px;padding:2px 5px">${r.dim || ''}</span><span class="tag tag-${r.lc}">${r.category}</span><span class="rc-kw">${r.kw}</span><span class="rc-lv tag tag-${r.lc}">${r.level}</span>${done ? '<span style="font-size:10px;color:var(--ok);margin-left:auto;margin-right:6px">已修复</span>' : ''}<span class="rc-ch"><i class="ph ph-caret-down"></i></span></div>
       <div class="rc-body"><div class="rc-in">
         <div class="rc-ev">${r.problem}</div>
         <div class="rc-ev" style="background:var(--bg);border-left:2px solid var(--bd)">${r.evidence}</div>
@@ -123,6 +123,11 @@ function renderResult() {
   document.getElementById('content').innerHTML = `
     <div class="au">
       ${hasSomeRisk ? `<div class="alert-ai au d1"><i class="ph-fill ph-lightbulb"></i><div><strong>AI：</strong>${aiMsg[p.id] || `发现 ${p.risks.length} 处风险项。`}</div></div>` : ''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;font-size:10px;color:var(--text-3)" class="au d1">
+        <span><i class="ph ph-scales" style="vertical-align:-1px"></i> 合规审查</span><span>·</span>
+        <span><i class="ph ph-shield-warning" style="vertical-align:-1px"></i> 打假防控</span><span>·</span>
+        <span><i class="ph ph-users" style="vertical-align:-1px"></i> 消费者认知</span>
+      </div>
       <div class="stat-row au d1">
         ${highCount > 0 ? `<span class="tag tag-r" style="padding:4px 10px;font-size:11px"><i class="ph ph-warning" style="font-size:12px"></i> 高危 ${highCount}</span>` : ''}
         ${midCount > 0 ? `<span class="tag tag-o" style="padding:4px 10px;font-size:11px"><i class="ph ph-eye" style="font-size:12px"></i> 中危 ${midCount}</span>` : ''}

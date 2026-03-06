@@ -75,7 +75,7 @@ const midRisks  = fixRows.filter(r => r.lc === 'o');
 const lowRisks  = fixRows.filter(r => r.lc === 'g');
 
 function riskItem(r) {
-  return `<div style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:${r.fixed ? 'var(--ok-bg,#f0faf0)' : '#fff'};border:1px solid ${r.fixed ? 'var(--ok)' : 'var(--bd)'};border-radius:var(--r-sm);font-size:12px;opacity:${r.fixed ? '0.65' : '1'}">
+  return `<div class="ri-item" data-pid="${r.pid}" style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:${r.fixed ? 'var(--ok-bg,#f0faf0)' : '#fff'};border:1px solid ${r.fixed ? 'var(--ok)' : 'var(--bd)'};border-radius:var(--r-sm);font-size:12px;opacity:${r.fixed ? '0.65' : '1'}">
     <div style="min-width:0;flex:1">
       <div style="font-weight:500${r.fixed ? ';text-decoration:line-through;color:var(--text-3)' : ''}">${r.kw}</div>
       <div style="font-size:10px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.prod}</div>
@@ -87,14 +87,16 @@ function riskItem(r) {
 function riskColumn(title, color, items) {
   const fixedCount = items.filter(r => r.fixed).length;
   const pct = items.length > 0 ? Math.round(fixedCount / items.length * 100) : 100;
+  const colId = 'rcol-' + title;
   return `<div style="flex:1;min-width:200px">
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;cursor:pointer;user-select:none" onclick="const c=document.getElementById('${colId}');c.style.display=c.style.display==='none'?'flex':'none';this.querySelector('.col-caret').style.transform=c.style.display==='none'?'':'rotate(90deg)'">
       <span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block"></span>
       <span style="font-weight:600;font-size:13px">${title}</span>
       <span style="font-size:10px;color:var(--text-3);margin-left:auto">${fixedCount}/${items.length}</span>
+      <i class="ph ph-caret-down col-caret" style="font-size:11px;transition:transform .2s;transform:rotate(90deg)"></i>
     </div>
     <div style="height:4px;background:var(--bd-l);border-radius:2px;overflow:hidden;margin-bottom:10px"><div style="width:${pct}%;height:100%;background:${color};border-radius:2px;transition:width .4s"></div></div>
-    <div style="display:flex;flex-direction:column;gap:6px">${items.length > 0 ? items.map(riskItem).join('') : '<div style="font-size:11px;color:var(--text-3);text-align:center;padding:12px">无</div>'}</div>
+    <div id="${colId}" style="display:flex;flex-direction:column;gap:6px">${items.length > 0 ? items.map(riskItem).join('') : '<div style="font-size:11px;color:var(--text-3);text-align:center;padding:12px">无</div>'}</div>
   </div>`;
 }
 
@@ -106,15 +108,32 @@ const aiCards = [
 ];
 const aiHtml = aiCards.map(c => `<div style="flex:1;min-width:180px;padding:10px 12px;background:#fff;border:1px solid var(--bd);border-radius:var(--r-sm);font-size:11px;line-height:1.5;color:var(--text-2)"><i class="ph ${c.icon}" style="color:var(--accent);margin-right:4px"></i>${c.text}</div>`).join('');
 
+let archiveFilter = 'all';
+function setArchiveFilter(f) {
+  archiveFilter = f;
+  document.querySelectorAll('.af-btn').forEach(b => b.classList.toggle('active', b.dataset.f === f));
+  document.querySelectorAll('.ri-item').forEach(el => {
+    if (f === 'all') { el.style.display = '' }
+    else { el.style.display = el.dataset.pid === f ? '' : 'none' }
+  });
+}
+
 document.getElementById('content').innerHTML = `
   <div class="au">
-    <div class="arc-grid au d1">${cards}</div>
+    <div class="au d1">
+      <div class="sec-h" style="cursor:pointer;user-select:none" onclick="const c=document.getElementById('sku-cards');c.style.display=c.style.display==='none'?'grid':'none';this.querySelector('.ai-caret').style.transform=c.style.display==='none'?'':'rotate(90deg)'"><i class="ph ph-tote"></i> 商品概况 <i class="ph ph-caret-down ai-caret" style="font-size:12px;transition:transform .2s;margin-left:4px"></i></div>
+      <div class="arc-grid" id="sku-cards">${cards}</div>
+    </div>
 
     <div class="au d2">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
         <div class="sec-h" style="margin:0"><i class="ph ph-wrench"></i> 修复追踪</div>
-        <div style="flex:1;height:5px;background:var(--bd-l);border-radius:3px;overflow:hidden"><div style="width:${globalPct}%;height:100%;background:var(--ok);border-radius:3px;transition:width .4s"></div></div>
+        <div style="flex:1;height:5px;background:var(--bd-l);border-radius:3px;overflow:hidden;min-width:60px"><div style="width:${globalPct}%;height:100%;background:var(--ok);border-radius:3px;transition:width .4s"></div></div>
         <span style="font-size:11px;color:var(--text-2);white-space:nowrap">${totalFixed}/${totalAll} 已修复（${globalPct}%）</span>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="btn btn-o btn-sm af-btn active" data-f="all" onclick="setArchiveFilter('all')">全部</button>
+        ${all.map(p => `<button class="btn btn-o btn-sm af-btn" data-f="${p.id}" onclick="setArchiveFilter('${p.id}')">${p.name.length > 8 ? p.name.slice(0, 8) + '…' : p.name}</button>`).join('')}
       </div>
       <div style="display:flex;gap:16px;flex-wrap:wrap">
         ${riskColumn('高危', 'var(--danger)', highRisks)}
@@ -123,7 +142,7 @@ document.getElementById('content').innerHTML = `
       </div>
     </div>
 
-    <div class="au d3" style="margin-top:8px">
+    <div class="au d3" style="margin-top:16px">
       <div class="sec-h" style="cursor:pointer;user-select:none" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'flex':'none';this.querySelector('.ai-caret').style.transform=c.style.display==='none'?'':'rotate(90deg)'"><i class="ph ph-sparkle"></i> AI 学习记录 <i class="ph ph-caret-right ai-caret" style="font-size:12px;transition:transform .2s;margin-left:4px"></i></div>
       <div style="display:none;gap:10px;flex-wrap:wrap">${aiHtml}</div>
     </div>

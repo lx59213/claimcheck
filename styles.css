@@ -243,7 +243,7 @@ textarea.ta:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--acc
 .modal h3 i { font-size: 20px; color: var(--accent) }
 .modal.modal-w { width: 560px }
 
-.srch-f.active { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); font-weight: 600 }
+.srch-f.active, .af-btn.active { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); font-weight: 600 }
 
 /* ========== Scan Overlay ========== */
 .scan-ov {

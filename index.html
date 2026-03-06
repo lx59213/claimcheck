@@ -81,20 +81,17 @@ document.getElementById('content').innerHTML = `
     </div>
 
     <div class="sec-h au d2"><i class="ph ph-tote"></i> 商品</div>
-    <div class="arc-grid au d2" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">${productCards}</div>
+    <div class="arc-grid au d2" style="grid-template-columns:repeat(3,1fr)">${productCards}</div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px">
-      <div class="au d3">
-        <div class="sec-h"><i class="ph ph-clock-countdown"></i> 系统动态 <span style="font-size:10px;color:var(--text-3);font-weight:400">AI 实时监控</span></div>
-        <div class="tl-item"><div class="tl-time">2h</div><div class="tl-dot" style="background:var(--danger)"></div><div class="tl-text"><a onclick="setCurrentProductId('jacket');location.href='aftersale.html'" href="javascript:void(0)">收到客诉：口袋没压胶</a><span style="font-size:10px;color:var(--text-3);margin-left:4px">来自天猫客服 · 冲锋衣</span></div></div>
-        <div class="tl-item"><div class="tl-time">5h</div><div class="tl-dot" style="background:var(--danger)"></div><div class="tl-text"><a onclick="setCurrentProductId('base');location.href='presale.html'" href="javascript:void(0)">AI 检测到医疗暗示风险</a><span style="font-size:10px;color:var(--text-3);margin-left:4px">打底衫详情页 · 自动扫描</span></div></div>
-        <div class="tl-item"><div class="tl-time">8h</div><div class="tl-dot" style="background:var(--warn)"></div><div class="tl-text"><a href="archive.html">平台规则更新：违禁词清单</a><span style="font-size:10px;color:var(--text-3);margin-left:4px">天猫 · +12项</span></div></div>
-        <div class="tl-item"><div class="tl-time">1d</div><div class="tl-dot" style="background:var(--ok)"></div><div class="tl-text"><a onclick="setCurrentProductId('jacket');location.href='presale.html'" href="javascript:void(0)">冲锋衣审核完成</a><span style="font-size:10px;color:var(--text-3);margin-left:4px">第3次 · 3高危 1中危 1低危</span></div></div>
-      </div>
-      <div class="au d4">
-        <div class="sec-h"><i class="ph ph-sparkle"></i> AI 洞察</div>
-        <div class="ai-card"><strong>"全压胶"客诉+15%</strong>（47件）。改措辞后存量用户仍按旧理解。<div class="ai-link" onclick="openTrend('jacket')">查看趋势 <i class="ph ph-arrow-right"></i></div></div>
-        <div class="ai-card"><strong>降燥打底衫 多项风险叠加</strong> 医疗暗示 + 功能宣称缺证据 + 尺码认知偏差。<div class="ai-link" onclick="setCurrentProductId('base');location.href='presale.html'">查看 <i class="ph ph-arrow-right"></i></div></div>
+    <div class="au d3" style="margin-top:24px">
+      <div class="sec-h"><i class="ph ph-sparkle"></i> AI 动态 <span style="font-size:10px;color:var(--text-3);font-weight:400">实时监控 · 洞察 · 学习</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="ai-card" style="display:flex;align-items:flex-start;gap:10px"><span class="tl-dot" style="background:var(--danger);margin-top:5px;flex-shrink:0"></span><div><a onclick="setCurrentProductId('jacket');location.href='aftersale.html'" href="javascript:void(0)" style="font-weight:500">收到客诉：口袋没压胶</a> <span style="font-size:10px;color:var(--text-3)">2h · 天猫客服 · 冲锋衣</span></div></div>
+        <div class="ai-card" style="display:flex;align-items:flex-start;gap:10px"><span class="tl-dot" style="background:var(--danger);margin-top:5px;flex-shrink:0"></span><div><strong>"全压胶"客诉+15%</strong>（47件），改措辞后存量用户仍按旧理解。<div class="ai-link" onclick="openTrend('jacket')">查看趋势 <i class="ph ph-arrow-right"></i></div></div></div>
+        <div class="ai-card" style="display:flex;align-items:flex-start;gap:10px"><span class="tl-dot" style="background:var(--danger);margin-top:5px;flex-shrink:0"></span><div><a onclick="setCurrentProductId('base');location.href='presale.html'" href="javascript:void(0)" style="font-weight:500">AI 检测到医疗暗示风险</a> <span style="font-size:10px;color:var(--text-3)">5h · 打底衫详情页 · 自动扫描</span></div></div>
+        <div class="ai-card" style="display:flex;align-items:flex-start;gap:10px"><span class="tl-dot" style="background:var(--warn);margin-top:5px;flex-shrink:0"></span><div><strong>降燥打底衫 多项风险叠加</strong> 医疗暗示 + 功能宣称缺证据 + 尺码认知偏差。<div class="ai-link" onclick="setCurrentProductId('base');location.href='presale.html'">查看 <i class="ph ph-arrow-right"></i></div></div></div>
+        <div class="ai-card" style="display:flex;align-items:flex-start;gap:10px"><span class="tl-dot" style="background:var(--warn);margin-top:5px;flex-shrink:0"></span><div><a href="archive.html" style="font-weight:500">平台规则更新：违禁词清单</a> <span style="font-size:10px;color:var(--text-3)">8h · 天猫 · +12项</span></div></div>
+        <div class="ai-card" style="display:flex;align-items:flex-start;gap:10px"><span class="tl-dot" style="background:var(--ok);margin-top:5px;flex-shrink:0"></span><div><a onclick="setCurrentProductId('jacket');location.href='presale.html'" href="javascript:void(0)" style="font-weight:500">冲锋衣审核完成</a> <span style="font-size:10px;color:var(--text-3)">1d · 第3次 · 3高危 1中危 1低危</span></div></div>
       </div>
     </div>
   </div>`;
