@@ -52,6 +52,7 @@ const cards = all.map(p => {
       <div class="arc-stat"><div class="arc-v">${p.stats.risks}</div><div class="arc-label">风险项</div></div>
       <div class="arc-stat"><div class="arc-v ${p.stats.highRisk > 0 ? 'r' : ''}">${p.stats.highRisk}</div><div class="arc-label">高危</div></div>
       <div class="arc-stat"><div class="arc-v" style="color:${adoptedCount > 0 ? 'var(--ok)' : 'var(--text-3)'}">${adoptedCount}/${totalRisks}</div><div class="arc-label">已修复</div></div>
+      <div class="arc-stat"><div class="arc-v" style="color:var(--accent)">${getKB(p.id).length}</div><div class="arc-label">知识依据</div></div>
     </div>
     <div class="arc-bar">${riskBar}</div>
     ${adoptedCount > 0 ? `<div style="font-size:10px;color:var(--ok);margin-top:6px"><i class="ph-bold ph-check-circle" style="vertical-align:-1px"></i> 修复进度 ${adoptPct}%</div>` : ''}
@@ -100,14 +101,6 @@ function riskColumn(title, color, items) {
   </div>`;
 }
 
-const aiCards = [
-  { icon: 'ph-brain', text: '"全压胶"在户外行业≠每处都压，消费者理解偏差率 87%' },
-  { icon: 'ph-graph', text: '"不易长痘"属医疗暗示，已标记高危' },
-  { icon: 'ph-lightning', text: '"无氟涂层"与"拒油等级4"技术悖论，已关联专家观点' },
-  { icon: 'ph-trend-up', text: '打底衫退换率偏高 + 功能宣称缺报告，多项风险叠加' }
-];
-const aiHtml = aiCards.map(c => `<div style="flex:1;min-width:180px;padding:10px 12px;background:#fff;border:1px solid var(--bd);border-radius:var(--r-sm);font-size:11px;line-height:1.5;color:var(--text-2)"><i class="ph ${c.icon}" style="color:var(--accent);margin-right:4px"></i>${c.text}</div>`).join('');
-
 let archiveFilter = 'all';
 function setArchiveFilter(f) {
   archiveFilter = f;
@@ -140,11 +133,6 @@ document.getElementById('content').innerHTML = `
         ${riskColumn('中危', 'var(--warn)', midRisks)}
         ${riskColumn('低危', 'var(--ok)', lowRisks)}
       </div>
-    </div>
-
-    <div class="au d3" style="margin-top:16px">
-      <div class="sec-h" style="cursor:pointer;user-select:none" onclick="const c=this.nextElementSibling;c.style.display=c.style.display==='none'?'flex':'none';this.querySelector('.ai-caret').style.transform=c.style.display==='none'?'':'rotate(90deg)'"><i class="ph ph-sparkle"></i> AI 学习记录 <i class="ph ph-caret-right ai-caret" style="font-size:12px;transition:transform .2s;margin-left:4px"></i></div>
-      <div style="display:none;gap:10px;flex-wrap:wrap">${aiHtml}</div>
     </div>
   </div>`;
 </script>

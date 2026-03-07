@@ -123,6 +123,105 @@ const PRODUCTS = {
   }
 };
 
+/* ===== Knowledge Base ===== */
+const KB_TYPES = {
+  law:      { label:'法规', icon:'ph-scales',         color:'var(--danger)' },
+  standard: { label:'标准', icon:'ph-certificate',     color:'var(--accent)' },
+  case:     { label:'案例', icon:'ph-newspaper-clipping', color:'var(--warn)' },
+  internal: { label:'内部', icon:'ph-buildings',       color:'var(--ok)' },
+  expert:   { label:'专家', icon:'ph-user-circle-gear', color:'#7C3AED' }
+};
+
+const KNOWLEDGE_BASE = {
+  jacket: [
+    { id:'j_law_1', type:'law',
+      title:'《广告法》第九条 — 绝对化用语禁令',
+      summary:'禁止"最高级""最佳""最先进"等表述，违者首次限流 7 天',
+      detail:'《中华人民共和国广告法》第九条第三项：广告不得使用"国家级""最高级""最佳"等用语。\n天猫处罚规则：首次违规限流 7 天，累计 3 次永久下架。2024 年天猫广告法处罚案例中，绝对化用语占投诉量 34%。',
+      source:'广告法 2018 修正 · 天猫《广告违规处理规则》2025 版',
+      relatedRisks:['最先进','100% 防水'], tags:['合规','违禁词'] },
+    { id:'j_std_1', type:'standard',
+      title:'GB/T 32624-2023 户外运动服装·冲锋衣',
+      summary:'定义"全压胶"为主要防水接缝处压胶，非所有接缝',
+      detail:'国标 GB/T 32624-2023 第 5.4.3 条："接缝防漏性能——主要防水接缝处应采用压胶或贴条处理。"行业共识：口袋、领口、装饰缝等不属于"主要防水接缝"。标准并未要求所有接缝均压胶。',
+      source:'GB/T 32624-2023 · 国家标准全文公开系统',
+      relatedRisks:['全压胶'], tags:['标准','防水'] },
+    { id:'j_case_1', type:'case',
+      title:'博主"H先生小韩哥"全压胶舆情事件',
+      summary:'指出口袋无压胶引发舆论风波，播放量 500w+',
+      detail:'2024 年 10 月，博主"H先生小韩哥"发布测评视频，拆解 STORMCREW 冲锋衣后指出"口袋没有压胶"，质疑"全压胶"宣传。视频播放量超 500 万。\n后续：专家姚蔚铭回应"口袋不压胶是行业通行做法"，品牌方发布国标检测报告回应。舆论逐步平息，但近 30 天仍有 62% 客诉涉及压胶理解偏差。',
+      source:'B 站 · 2024.10 · "H先生小韩哥"',
+      relatedRisks:['全压胶'], tags:['打假','舆情'] },
+    { id:'j_int_1', type:'internal',
+      title:'公司送检报告：PFOA/PFOS 检测结果',
+      summary:'大货成衣 PFOA 未检出，符合国标"无氟整理"认定',
+      detail:'第一次送检（2024.09）：PFOA 0.90μg/㎡，低于国标 1.0μg/㎡ 上限，判定合格。\n第二次送检（2024.11 大货成衣）：PFOA 和 PFOS 均为"未检出"，远低于国标限值。\n检测机构：SGS · 报告编号 SHTS-2024-XXXXX。',
+      source:'SGS 检测报告 · 公司品控部',
+      relatedRisks:['无氟涂层'], tags:['打假','检测'] },
+    { id:'j_exp_1', type:'expert',
+      title:'专家姚蔚铭：无氟与拒油等级的技术分析',
+      summary:'"无氟拒水剂理论上无法达到 4 级拒油，需关注表述准确性"',
+      detail:'面料技术专家姚蔚铭分析：C0（无氟）拒水剂的分子结构决定其仅能实现拒水功能，无法达到 ISO 14419 标准 4 级拒油。\n建议：若确需保留"拒油"宣称，应提供第三方拒油测试报告；否则应删除"拒油等级 4 级"的表述，仅保留"防水"功能宣称。\n后续：品牌再次送检大货，PFOA/PFOS 未检出，但拒油测试数据未公开。',
+      source:'姚蔚铭 · 纺织材料工程师 · 2024.10',
+      relatedRisks:['无氟涂层'], tags:['打假','技术'] },
+    { id:'j_law_2', type:'law',
+      title:'天猫违禁词清单 2025 版（节选）',
+      summary:'新增 12 项户外品类违禁词，含"全防水""零渗透"等',
+      detail:'2025 年 1 月更新的天猫违禁词清单中，户外品类新增：全防水、零渗透、100% 防水、绝对防风、最强保暖、医疗级抗菌等 12 项。\n处罚力度：首次警告 + 限流 3 天，二次违规扣 2 分 + 限流 7 天，三次违规店铺降权。',
+      source:'天猫规则中心 · 2025.01 更新',
+      relatedRisks:['最先进','100% 防水'], tags:['合规','平台规则'] }
+  ],
+  base: [
+    { id:'b_law_1', type:'law',
+      title:'《广告法》第十七条 — 医疗功效宣传禁令',
+      summary:'非医疗器械不得宣称预防、治疗疾病功效',
+      detail:'《广告法》第十七条：除医疗、药品、医疗器械广告外，禁止其他广告涉及疾病治疗功能。\n"不易长痘"暗示预防痤疮（皮肤病），属于非医疗产品的医疗功效宣传。\n处罚：市场监管部门可处 20 万以上罚款。职业打假人投诉成功率极高。',
+      source:'广告法 2018 修正 · 市场监管总局解读',
+      relatedRisks:['不易长痘'], tags:['合规','医疗暗示'] },
+    { id:'b_std_1', type:'standard',
+      title:'T/GDBX 056-2022 抗菌纺织品分级标准',
+      summary:'7A 为最高等级，要求洗涤 150 次后仍具高效抗菌性能',
+      detail:'该团体标准将抗菌纺织品分为 3A、5A、7A 三个等级。7A 要求：\n- 抗菌率 ≥99%（大肠杆菌、金黄色葡萄球菌、白色念珠菌）\n- 洗涤 150 次后抗菌率仍 ≥90%\n- 需提供第三方检测报告\n注意：该标准为团体标准（非国标），标注时应写明完整标准号和检测机构。电商平台要求：凡提及功能性宣称，必须在详情页展示检测报告链接。',
+      source:'广东省纺织协会 · T/GDBX 056-2022',
+      relatedRisks:['7A 抗菌'], tags:['标准','抗菌'] },
+    { id:'b_std_2', type:'standard',
+      title:'GB/T 21655.2 吸湿速干性能完整标准',
+      summary:'标准分"吸湿性"和"速干性"两维度，仅标注吸水速率属选择性披露',
+      detail:'GB/T 21655.2-2019 第 5 条：吸湿速干性能评价包含"吸湿性"（吸水速率、芯吸高度）和"速干性"（蒸发速率、透湿量）两个维度。\n仅展示吸水速率而不展示蒸发速率，存在信息选择性披露风险。消费者最关心的"干得快不快"对应蒸发速率指标。',
+      source:'GB/T 21655.2-2019 · 国家标准全文公开系统',
+      relatedRisks:['吸水速率'], tags:['标准','速干'] },
+    { id:'b_int_1', type:'internal',
+      title:'公司 7A 抗菌检测报告摘要',
+      summary:'通过第三方检测，抗菌率 99.6%，洗涤 150 次后 92.3%',
+      detail:'检测机构：广州纤维产品检测研究院\n检测标准：T/GDBX 056-2022\n结果：\n- 大肠杆菌抗菌率 99.6%（标准 ≥99%）✓\n- 金黄色葡萄球菌抗菌率 99.8% ✓\n- 白色念珠菌抗菌率 99.2% ✓\n- 洗涤 150 次后抗菌率 92.3%（标准 ≥90%）✓\n报告编号：GZ-2024-XXXXX\n问题：报告已有，但未在详情页展示链接。',
+      source:'广州纤检院 · 2024.08 · 品控部存档',
+      relatedRisks:['7A 抗菌'], tags:['内部','检测'] },
+    { id:'b_case_1', type:'case',
+      title:'同行"抗菌"宣传处罚案例',
+      summary:'某品牌因"抗菌防螨"宣称缺报告被罚 15 万元',
+      detail:'2024 年 6 月，上海市市场监管局对某内衣品牌处罚 15 万元。原因：\n- 详情页宣称"AAA 级抗菌""防螨率 99%"但未在页面提供检测报告\n- 消费者投诉后，品牌虽提交了检测报告，但因"发布广告时未展示"仍被判定违规\n启示：有报告不等于合规，必须在广告发布时同步展示。本公司打底衫存在同样问题。',
+      source:'上海市市场监管局行政处罚决定书 · 2024.06',
+      relatedRisks:['7A 抗菌','不易长痘'], tags:['案例','处罚'] }
+  ],
+  tshirt: [
+    { id:'t_std_1', type:'standard',
+      title:'凉感面料 Q-max 检测标准',
+      summary:'Q-max ≥0.15 W/cm² 可宣称"接触凉感"，需标注数据',
+      detail:'Q-max（最大瞬态热流量）是衡量面料接触凉感的核心指标。\n行业共识：Q-max ≥0.15 W/cm² 可宣称"接触凉感"。\n注意：凉感是瞬时体验（接触皮肤最初 2-3 秒），并非持续降温。消费者常误解为"穿着凉爽"。\n建议：文案中明确标注 Q-max 数值并解释原理，避免消费者预期偏差。',
+      source:'FZ/T 73067-2020 · 接触凉感评价',
+      relatedRisks:['凉感面料'], tags:['标准','凉感'] },
+    { id:'t_int_1', type:'internal',
+      title:'公司凉感面料 Q-max 检测结果',
+      summary:'Q-max 0.18 W/cm²，超过行业标准 0.15',
+      detail:'检测机构：中纺标检验认证中心\n检测标准：FZ/T 73067-2020\n结果：Q-max = 0.18 W/cm²（标准 ≥0.15）✓\n问题：详情页仅写"凉感面料"，未标注具体 Q-max 数值。建议补充数据增强说服力。',
+      source:'中纺标 · 2024.05 · 品控部存档',
+      relatedRisks:['凉感面料'], tags:['内部','检测'] }
+  ]
+};
+
+function getKB(pid) { return KNOWLEDGE_BASE[pid || getCurrentProductId()] || [] }
+function getKBForRisk(kw, pid) { return getKB(pid).filter(e => e.relatedRisks.includes(kw)) }
+
 const STATUS_COLOR = { danger: 'var(--danger)', warning: 'var(--warn)', safe: 'var(--ok)' };
 
 /* ===== Persistent State ===== */
@@ -155,7 +254,7 @@ function adoptAllRisks(pid) {
 function isAdopted(kw, pid) { return getAdopted(pid).includes(kw) }
 
 function pulseNav() {
-  document.querySelectorAll('a[href="archive.html"],a[href="history.html"]').forEach(el => {
+  document.querySelectorAll('a[href="archive.html"],a[href="history.html"],a[href="kb.html"]').forEach(el => {
     el.classList.add('sb-pulse');
     setTimeout(() => el.classList.remove('sb-pulse'), 1800);
   });
@@ -206,6 +305,9 @@ function renderSidebar(activePage) {
     </a>
     <a class="sb-item ${activePage === 'aftersale' ? 'active' : ''}" href="aftersale.html">
       <i class="ph ph-chat-circle-text"></i> 售后话术
+    </a>
+    <a class="sb-item ${activePage === 'kb' ? 'active' : ''}" href="kb.html">
+      <i class="ph ph-book-open-text"></i> 知识库 <span class="sb-badge g">${getKB(pid).length}</span>
     </a>
     <a class="sb-item ${activePage === 'history' ? 'active' : ''}" href="history.html">
       <i class="ph ph-clock-counter-clockwise"></i> 风险历史
@@ -296,6 +398,7 @@ function openSearch() {
       <button class="btn btn-o btn-sm srch-f" onclick="toggleFilter(this,'risk')" data-f="risk">风险项</button>
       <button class="btn btn-o btn-sm srch-f" onclick="toggleFilter(this,'complaint')" data-f="complaint">客诉</button>
       <button class="btn btn-o btn-sm srch-f" onclick="toggleFilter(this,'product')" data-f="product">商品</button>
+      <button class="btn btn-o btn-sm srch-f" onclick="toggleFilter(this,'kb')" data-f="kb">知识库</button>
     </div>
     <div id="srch-results" style="max-height:50vh;overflow-y:auto"></div>`);
   setTimeout(() => { const el = document.getElementById('srch-input'); if (el) el.focus() }, 100);
@@ -335,6 +438,12 @@ function renderSearchResults() {
           results.push({ type: 'complaint', label: c.q.slice(0, 60) + (c.q.length > 60 ? '…' : ''), sub: `${p.name} · ${c.tags.join('/')}`, pid: p.id, href: 'aftersale.html' });
       });
     }
+    if (f === 'all' || f === 'kb') {
+      getKB(p.id).forEach(e => {
+        if (!q || e.title.toLowerCase().includes(ql) || e.summary.toLowerCase().includes(ql) || e.tags.some(t => t.toLowerCase().includes(ql)))
+          results.push({ type: 'kb', label: e.title, sub: `${p.name} · ${(KB_TYPES[e.type] || {}).label || e.type}`, pid: p.id, href: 'kb.html', kbId: e.id });
+      });
+    }
   });
 
   if (results.length === 0) {
@@ -342,9 +451,9 @@ function renderSearchResults() {
     return;
   }
 
-  const icons = { product: 'ph-tote', risk: 'ph-warning', complaint: 'ph-chat-circle-text' };
+  const icons = { product: 'ph-tote', risk: 'ph-warning', complaint: 'ph-chat-circle-text', kb: 'ph-book-open-text' };
   out.innerHTML = results.slice(0, 20).map(r => `
-    <div class="cc" style="padding:10px 12px;margin-bottom:6px" onclick="closeModal();setCurrentProductId('${r.pid}');location.href='${r.href}'">
+    <div class="cc" style="padding:10px 12px;margin-bottom:6px" onclick="closeModal();setCurrentProductId('${r.pid}');${r.kbId ? `setState('kb_highlight','${r.kbId}');` : ''}location.href='${r.href}'">
       <div style="display:flex;align-items:center;gap:8px">
         <i class="ph ${icons[r.type]}" style="font-size:15px;color:var(--text-3);flex-shrink:0"></i>
         <div style="flex:1;min-width:0">

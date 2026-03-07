@@ -100,6 +100,7 @@ function renderResult() {
         <div class="rc-ev">${r.problem}</div>
         <div class="rc-ev" style="background:var(--bg);border-left:2px solid var(--bd)">${r.evidence}</div>
         <div class="rc-fix"><div class="rc-fix-l">修复建议</div><div class="rc-fix-old">${r.original}</div><div>${r.fix.replace(/\n/g, '<br>')}</div></div>
+        ${(() => { const kbEntries = getKBForRisk(r.kw, p.id); return kbEntries.length > 0 ? `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">${kbEntries.map(e => { const m = KB_TYPES[e.type]; return `<a href="javascript:void(0)" onclick="event.stopPropagation();setState('kb_highlight','${e.id}');location.href='kb.html'" class="ai-link" style="font-size:10px"><i class="ph ${m.icon}" style="color:${m.color}"></i> ${m.label}：${e.title.length > 20 ? e.title.slice(0,20)+'…' : e.title} →</a>`; }).join('')}</div>` : ''; })()}
         <div style="display:flex;gap:6px">${btnHtml}</div>
       </div></div></div>`;
   }).join('');

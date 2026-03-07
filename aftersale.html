@@ -93,11 +93,16 @@ function renderResult() {
     ? `已关联售前扫描 ${relatedRisks.length} 项风险，话术已针对性定制。`
     : `已匹配 ${c.ctx.length} 条历史记录。`;
 
-  const riskCards = relatedRisks.map(r =>
-    `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--r-sm);font-size:11px;margin-bottom:6px">
+  const riskCards = relatedRisks.map(r => {
+    const kbEntries = getKBForRisk(r.kw, p.id);
+    const kbLink = kbEntries.length > 0
+      ? `<div style="margin-top:4px"><a href="javascript:void(0)" onclick="setState('kb_highlight','${kbEntries[0].id}');location.href='kb.html'" class="ai-link" style="font-size:10px"><i class="ph ph-book-open-text"></i> 知识库依据 (${kbEntries.length}) →</a></div>`
+      : '';
+    return `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--r-sm);font-size:11px;margin-bottom:6px">
       <span class="tag tag-${r.lc}" style="white-space:nowrap;flex-shrink:0">${r.level}</span>
-      <div><strong>${r.kw}</strong><div style="color:var(--text-3);margin-top:2px">${r.problem}</div></div>
-    </div>`).join('');
+      <div><strong>${r.kw}</strong><div style="color:var(--text-3);margin-top:2px">${r.problem}</div>${kbLink}</div>
+    </div>`;
+  }).join('');
 
   const ctxBrief = c.ctx.slice(0, 2).map(t => `<div style="font-size:10px;color:var(--text-3);padding:2px 0">· ${t}</div>`).join('');
 
